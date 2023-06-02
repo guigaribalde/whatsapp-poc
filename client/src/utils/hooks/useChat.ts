@@ -24,6 +24,7 @@ const useChat = (room: string) => {
       ]);
     });
     socket.on("room_change", (new_room) => {
+      console.log(new_room);
       setInnerRoom(new_room);
     });
   }, []);

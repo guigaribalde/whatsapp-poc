@@ -80,6 +80,16 @@ export class ChatGatewey {
     @MessageBody() { room }: { room: string },
     @ConnectedSocket() socket: Socket,
   ): void {
+    const [test_type, user_id] = room.split('/');
+
+    if (test_type === 'B') {
+      if (user_id === 'guest') {
+        socket.join(`${test_type}/1`);
+        socket.join(`${test_type}/2`);
+        socket.join(`${test_type}/3`);
+      }
+    }
+
     socket.join(room);
     user_name.some((user) => {
       if (!user.user) {
@@ -95,13 +105,14 @@ export class ChatGatewey {
       content: `Seu nome é ${name}`,
     });
 
-    const room_id = room.split('/')[1];
-    if (room_id === 'guest') {
-      socket.emit('message', {
-        origin_type: 'system',
-        content:
-          'Você pode digitar "/1" "/2" ou "/3" para se sincronizar com as tarefas 1 2 ou 3',
-      });
+    if (test_type === 'A') {
+      if (user_id === 'guest') {
+        socket.emit('message', {
+          origin_type: 'system',
+          content:
+            'Você pode digitar "/1" "/2" ou "/3" para se sincronizar com as tarefas 1 2 ou 3',
+        });
+      }
     }
   }
 
@@ -110,32 +121,47 @@ export class ChatGatewey {
     @MessageBody() { room, message }: { room: string; message: string },
     @ConnectedSocket() socket: Socket,
   ): void {
+    const [test_type, user_id] = room.split('/');
     const name = user_name.find((user) => user.user === socket.id)?.name;
-    const [id, user_id] = room.split('/');
-    if (message.startsWith('/')) {
-      const task = message.split('/')[1];
-      const new_room = `${id}/${task}`;
-
-      socket.leave(room);
-
-      socket.join(new_room);
-      socket.emit('room_change', new_room);
-      socket.emit('message', {
-        origin_type: 'system',
-        content: `Você está sincronizado com a tarefa ${new_room}`,
-      });
-      socket.broadcast.to(new_room).emit('message', {
-        origin_type: 'system',
-
-        content: `O usuário ${name} está sincronizado com a tarefa ${new_room}`,
-      });
-      return;
-    }
     const msg: Message = {
       origin_type: 'user',
       content: message,
       origin_header: name,
     };
-    socket.broadcast.to(room).emit('message', msg);
+
+    if (test_type === 'A') {
+      if (message.startsWith('/')) {
+        const task = message.split('/')[1];
+        const new_room = `${test_type}/${task}`;
+
+        socket.leave(room);
+
+        socket.join(new_room);
+        socket.emit('room_change', new_room);
+        socket.emit('message', {
+          origin_type: 'system',
+          content: `Você está sincronizado com a tarefa ${new_room}`,
+        });
+        socket.broadcast.to(new_room).emit('message', {
+          origin_type: 'system',
+
+          content: `O usuário ${name} está sincronizado com a tarefa ${new_room}`,
+        });
+        return;
+      }
+      socket.broadcast.to(room).emit('message', msg);
+    }
+    if (room.includes('B')) {
+      if (room.includes('guest')) {
+        const [a, b, c] = room.split('/');
+        console.log({ a, b, c });
+        if (c) socket.broadcast.to(`B/${c}`).emit('message', msg);
+      } else {
+        socket.broadcast.to('B/guest').emit('message', msg);
+        socket.broadcast
+          .to('B/guest')
+          .emit('room_change', `B/guest/${user_id}`);
+      }
+    }
   }
 }

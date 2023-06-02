@@ -9,7 +9,7 @@ interface Params {
   };
 }
 export default function One({ params }: Params) {
-  const { messages, sendMessage } = useChat(`A/${params.id}`);
+  const { messages, sendMessage } = useChat(`B/${params.id}`);
 
   function submitMessage(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
