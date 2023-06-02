@@ -13,6 +13,11 @@ export default function Home() {
           CASO B
         </button>
       </Link>
+      <Link href="/c" passHref>
+        <button type="button" className="btn btn-outline btn-primary">
+          CASO C
+        </button>
+      </Link>
     </div>
   );
 }

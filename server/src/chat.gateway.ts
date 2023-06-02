@@ -82,7 +82,7 @@ export class ChatGatewey {
   ): void {
     const [test_type, user_id] = room.split('/');
 
-    if (test_type === 'B') {
+    if (test_type === 'B' || test_type === 'C') {
       if (user_id === 'guest') {
         socket.join(`${test_type}/1`);
         socket.join(`${test_type}/2`);
@@ -105,7 +105,7 @@ export class ChatGatewey {
       content: `Seu nome é ${name}`,
     });
 
-    if (test_type === 'A') {
+    if (test_type === 'A' || test_type === 'C') {
       if (user_id === 'guest') {
         socket.emit('message', {
           origin_type: 'system',
@@ -129,7 +129,7 @@ export class ChatGatewey {
       origin_header: name,
     };
 
-    if (test_type === 'A') {
+    if (test_type === 'A' || test_type === 'C') {
       if (message.startsWith('/')) {
         const task = message.split('/')[1];
         const new_room = `${test_type}/${task}`;
